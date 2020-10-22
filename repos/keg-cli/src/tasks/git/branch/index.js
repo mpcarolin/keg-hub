@@ -1,3 +1,4 @@
 module.exports = {
-  ...require('./branch')
+  ...require('./branch'),
+  ...require('./prev')
 }
