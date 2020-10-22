@@ -5,8 +5,9 @@ const { asyncCmd } = require('@keg-hub/spawn-cmd')
 const { promptList } = require('@keg-hub/ask-it')
 
 const listPreviousBranches = async (count=5) => {
+  const cwd = process.cwd()
   const { data, error } = await asyncCmd(`
-    git reflog | egrep -io "moving from ([^[:space:]]+)" | awk '{ print $3 }' | awk ' !x[$0]++' | egrep -v '^[a-f0-9]{40}$' | head -n${count}
+    cd ${cwd} && git reflog | egrep -io "moving from ([^[:space:]]+)" | awk '{ print $3 }' | awk ' !x[$0]++' | egrep -v '^[a-f0-9]{40}$' | head -n${count}
   `)
 
   if (error) {
@@ -35,19 +36,19 @@ const listPreviousBranches = async (count=5) => {
  * @returns {void}
  */
 const gitPrevious = async (args) => {
-  const { globalConfig, params, __internal={} } = args
-  const { context, location, tap, list=0 } = params
+  const { params, __internal={} } = args
+  const { list, count=5 } = params
   const { __skipLog } = __internal
 
-  const gitPath = getGitPath(globalConfig, tap || context) || location
-  !gitPath && generalError(`Git path does not exist for ${ tap || context || location }`)
-
-  if (list) {
-    const selectedBranch = await listPreviousBranches(list)
+  if (list && count > 0) {
+    const selectedBranch = await listPreviousBranches(count)
     selectedBranch && git.branch.checkout(selectedBranch)
   }
-  else {
+  else if (!list) {
     await git.branch.checkout('-')
+  }
+  else {
+    console.error('No branches to list when count is 0')
   }
 }
 
@@ -61,8 +62,11 @@ module.exports = {
       list: {
         alias: ['ls'],
         description: 'Show a list of previous branches',
-        example: 'keg git branch --branch my-git-branch',
       },
+      count: {
+        alias: ['n'],
+        description: 'number of previous branches to show',
+      }
     }
   }
 }
