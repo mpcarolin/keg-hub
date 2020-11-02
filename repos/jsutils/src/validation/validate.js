@@ -143,9 +143,26 @@ const handleFailure = (validation, shouldLog, shouldThrow, prefix) => {
     ? [ prefix, ...validation.reason ]
     : validation.reason
 
+  const error = new Error(reason.join())
+
   if (shouldThrow)
-    throw new Error(reason.join())
+    throw error
   
-  if (shouldLog)
-    console.error(...reason)
+  if (shouldLog) {
+    const formatted = formatStackTrace(error.stack)
+    console.error(formatted)
+  }
+}
+
+const formatStackTrace = (stackString, maxLines=20) => {
+  if (!stackString) return stackString
+  const stack = stackString.split('\n')
+  let index = 0
+  stack.forEach(
+    (item, idx) => item.includes(validate.name) && (index = idx)
+  )
+  return stack
+    .slice(index)
+    .slice(0, maxLines)
+    .join('\n')
 }
