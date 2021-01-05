@@ -9,5 +9,6 @@ import { ReThemeContext } from '../context/reThemeContext'
  * @returns { Object } - Current theme
  */
 export const useTheme = () => {
+  console.log('this is a modification')
   return useContext(ReThemeContext)
 }
