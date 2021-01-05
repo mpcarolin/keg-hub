@@ -27,8 +27,8 @@ jobs:
         with:
           path: |
             ${{ steps.yarn-cache-dir-path.outputs.dir }}
-            repos/**/node_modules
-          key: ${{ runner.os }}-modules-${{ hashFiles('repos/**/yarn.lock') }}
+            repos/*/node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('repos/*/yarn.lock') }}
       - name: Install Yarn Dependencies
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: bash scripts/ci/runYarnCmd.sh "install"
