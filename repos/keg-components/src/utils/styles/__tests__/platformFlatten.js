@@ -41,6 +41,7 @@ const twoLevel = {
 
 describe('platformFlatten', () => {
   it('should flatten the passed in object', () => {
+    console.log('wow')
     const flattened = platformFlatten(oneLevel)
 
     expect(flattened.level1['$all']).toBe(undefined)
