@@ -6,7 +6,7 @@ import { createElement } from './createElement'
 
 const storyStyles = { textAlign: 'center' }
 
-const testProps =  {
+const testProps = {
   id: 'button-id',
   classList: ['button-class'],
   role: 'button',
@@ -15,7 +15,7 @@ const testProps =  {
     color: '#FFFFFF',
     width: 150,
     height: 50,
-  }
+  },
 }
 
 const renderElement = (comp, props, ...children) => {
