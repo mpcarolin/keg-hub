@@ -522,7 +522,7 @@ var drawer = function drawer() {
   var defStyles = {
     main: {
       overflow: 'hidden',
-      width: "100%"
+      width: '100%'
     }
   };
   return {

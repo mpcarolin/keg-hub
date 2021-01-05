@@ -1,0 +1,1 @@
+{"version":3,"file":"fooBox.js","sources":["../../../src/components/box/fooBox.js"],"sourcesContent":["export const fooBox = () => 'new file'\n"],"names":["fooBox"],"mappings":"IAAaA,MAAM,GAAG,SAATA,MAAS;AAAA,SAAM,UAAN;AAAA;;;;"}
