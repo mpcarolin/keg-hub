@@ -28,11 +28,11 @@ const askWhenNoContext = async (type) => {
  */
 const containerContext = async (toFind, prefixData={}, __injected, askFor) => {
   let found = await docker.container.get(toFind)
-  found = found || prefixData.prefix && await docker.container.get(prefixData.prefix)
+  found = found || prefixData.withPrefix && await docker.container.get(prefixData.withPrefix)
   const container = found || askFor && await askWhenNoContext('container')
 
   return !container
-    ? prefixData
+    ? false
     : __injected
       ? { ...container, ...prefixData }
       : { ...container, ...prefixData, ...getPrefixContext(container.name) }
@@ -46,17 +46,39 @@ const containerContext = async (toFind, prefixData={}, __injected, askFor) => {
  *
  * @returns {Object} - Image, context, and the original with the prefix
  */
-const imageContext = async (toFind, prefixData={}, __injected, askFor) => {
+const imageContext = async (toFind, tag, prefixData={}, __injected, askFor) => {
 
-  let found = await docker.image.get(toFind)
-  found = found || prefixData.prefix && await docker.image.get(prefixData.prefix)
+  let found = await docker.image.get(tag ? `${toFind}:${tag}` : toFind)
+  found = found || prefixData.withPrefix && await docker.image.get(prefixData.withPrefix)
   const image = found || askFor && await askWhenNoContext('image')
 
   return !image
-    ? prefixData
+    ? false
     : __injected
-      ? { ...container, ...prefixData }
-      : { ...image, ...prefixData, ...getPrefixContext(image.repository) }
+      ? { ...image, ...prefixData }
+      : { ...image, ...prefixData, ...getPrefixContext(image.rootId) }
+
+}
+
+/**
+ * Gets the context from a prefixData object
+ * @function
+ * @param {string} prefixData - Parsed prefix data of an image of container
+ *
+ * @returns {Object} - context object with the prefixData and a found image or container
+ */
+const contextFromPrefix = async prefixData => {
+
+  let context = {}
+  const dockerRef = prefixData.id || prefixData.withPrefix
+
+  const container = await docker.container.get(dockerRef)
+  if(container) context = { container }
+
+  const image = !container && await docker.image.get(dockerRef)
+  if(image) context = { image }
+
+  return { ...prefixData, ...context }
 
 }
 
@@ -73,26 +95,21 @@ const imageContext = async (toFind, prefixData={}, __injected, askFor) => {
  * @returns {Object} - Found context, and prefix if it exists
  */
 const getContext = async (params, askFor) => {
-  const { context, container, image, tap, __injected } = params
-  const contextRef = context || container || image || (tap && 'tap')
+  const { context, container, image, tap, __injected, tag } = params
+  const contextRef = image && tag
+    ? image
+    : context || container || image || (tap && 'tap')
 
-  // There is a bug in the options parsing that causes context to sometimes be true
-  // It the task is called task --context tap --tap my-tap
-  // Then the params will look like { context: true, tap: true  }
-  // When it should be { context: 'tap', tap: 'my-tap' }
-  // The parsing is finding the second options `tap`, as a param key,
-  // If should instead set it as the value of the `context` param key
   const prefixData = isDockerId(contextRef)
     ? { id: contextRef }
     : isStr(contextRef)
       ? getPrefixContext(contextRef)
       : {}
 
-  const foundContext = container
-    ? await containerContext(container, prefixData, __injected, askFor)
-    : image
-      ? await imageContext(image, prefixData, __injected, askFor)
-      : prefixData
+  let foundContext = container && await containerContext(container, prefixData, __injected, askFor)
+  foundContext = foundContext || image && await imageContext(image, tag, prefixData, __injected, askFor)
+  foundContext = foundContext || ((prefixData.withPrefix || prefixData.id) && await contextFromPrefix(prefixData))
+  foundContext = foundContext || prefixData
 
   return context === 'tap'
     ? { tap, context, ...foundContext }

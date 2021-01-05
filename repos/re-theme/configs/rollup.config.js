@@ -6,8 +6,9 @@ import replace from '@rollup/plugin-replace'
 import commonjs from '@rollup/plugin-commonjs'
 import resolve from '@rollup/plugin-node-resolve'
 import { terser } from "rollup-plugin-terser"
+const { getAliases } = require("./aliases.config")
 
-// Need to require our babel.config.js because it uses module.expots
+// Need to require our babel.config.js because it uses module.exports
 const babelConfig = require('../babel.config.js')
 
 const isProd = process.env.NODE_ENV === 'production'
@@ -17,17 +18,18 @@ const buildPath = `./build`
 
 // List of alternate exports
 // This allows importing only when you need
-// Example => Not all apps that use re-theme need the styleParser
-// So we export it separately to keep bundle size down
 const inputs = {
   styleInjector: './src/styleInjector/index.{{platform}}',
-  styleParser: './src/styleParser/index.{{platform}}',
   colors: './src/helpers/colors.js',
 }
 
 const buildConfig = (type, ext, platform, config) => {
   return {
     ...config,
+    plugins: [
+      buildHook(platform, type),
+      ...config.plugins,
+    ],
     input: {
       index: `./src/index.${ext}`,
       ...Object.keys(inputs)
@@ -49,20 +51,29 @@ const buildConfig = (type, ext, platform, config) => {
   }
 }
 
+
 const shared = (platform, ext) => ({
-  external: ['react', 'react-dom', 'react-native', 'jsutils', '@keg-hub/jsutils' ],
+  external: [
+    'react',
+    'react-dom',
+    'react-native',
+    'jsutils',
+    '@keg-hub/jsutils',
+    'react-native-web/dist/modules/prefixStyles',
+    'react-native-web/dist/modules/flattenArray',
+    'react-native-web/dist/exports/StyleSheet/flattenStyle',
+    'react-native-web/dist/exports/StyleSheet/createReactDOMStyle',
+    'react-native-web/dist/exports/StyleSheet/createCompileableStyle',
+  ],
   watch: {
     clearScreen: false
   },
   plugins: [
-    buildHook(platform),
     replace({
-      "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV)
+      "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
     }),
     alias({
-      entries: {
-        ReDimensions: `src/dimensions/dimensions.${ext}`
-      },
+      entries: getAliases(ext),
     }),
     resolve(),
     babel({
@@ -88,7 +99,7 @@ const shared = (platform, ext) => ({
 // Which allows us to loop over the platform types for native and web
 export default Array.from([ 'web', 'native' ])
   .reduce((apps, platform) => {
-    // Get the extention for the inputs and outputs based on platform
+    // Get the extension for the inputs and outputs based on platform
     const ext = platform !== 'web' ? `${platform}.js` : 'js'
 
     const sharedConfig = shared(platform, ext)

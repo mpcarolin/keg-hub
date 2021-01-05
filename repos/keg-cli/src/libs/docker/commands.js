@@ -4,12 +4,10 @@ const {
   noItemError,
   noLoginError,
   cmdSuccess,
-  shouldLog
 } = require('./helpers')
 const { Logger } = require('KegLog')
 const { isArr, toStr } = require('@keg-hub/jsutils')
-const { addMachineSSH } = require('./machine')
-const { executeCmd, spawnCmd, spawnProc } = require('KegProc')
+const { executeCmd, spawnProc } = require('KegProc')
 
 /**
  * Calls the docker cli from the command line and returns the response
@@ -33,16 +31,12 @@ const ensureDocker = cmd => cmd.trim().indexOf('docker') === 0 ? cmd : `docker $
  * @param {Object} params.errResponse - On an error calling docker, this will be returned.
  *                                      If errResponse is undefined, the current process will exit
  *
- * @returns {Array|string} - JSON array of items || stdout from docker cli call
+ * @returns {Promise<string|Array>} - JSON array of items || stdout from docker cli call
  */
 const dockerCli = async (params={}, cmdOpts={}) => {
   const { opts, errResponse, log, skipError, format='', force } = params
 
   const options = isArr(opts) ? opts.join(' ').trim() : toStr(opts)
-
-  // TODO: validate running all docker command on the docker-machine instance
-  // const useFormat = format === 'json' ? `--format \\"{{json .}}\\"` : format
-
   const useFormat = format === 'json' ? `--format "{{json .}}"` : format
   const useForce = force ? '--force' : ''
 
@@ -51,8 +45,6 @@ const dockerCli = async (params={}, cmdOpts={}) => {
   log && Logger.spacedMsg(`Running command: `, cmdToRun)
 
   const { error, data } = await executeCmd(
-    // TODO: validate running all docker command on the docker-machine instance
-    // addMachineSSH(cmdToRun),
     cmdToRun,
     cmdOpts
   )
@@ -91,7 +83,7 @@ const dynamicCmd = async (args, type) => {
  * @param {string} toRemove - Name or id of item to remove
  * @param {boolean} force - Should force remove the item
  *
- * @returns {void}
+ * @returns {Promise<string|Array>|Error}
  */
 const remove = ({ item, force, skipError, type='' }, cmdOpts) => {
   return item

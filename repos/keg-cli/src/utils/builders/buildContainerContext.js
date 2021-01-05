@@ -80,6 +80,7 @@ const buildContainerContext = async args => {
     envs,
     params,
     cmdContext,
+    contextData,
     globalConfig,
   })
 
@@ -100,7 +101,7 @@ const buildContainerContext = async args => {
     : builtContext
 
   // Ensure the prefix is added if it exists or it's in the name
-  containerContext.prefix = containerContext.prefix ||
+  containerContext.withPrefix = containerContext.withPrefix ||
     containerContext.name && 
     getPrefix(containerContext.name)
 

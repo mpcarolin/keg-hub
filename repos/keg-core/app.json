@@ -1,9 +1,9 @@
 {
-  "name": "SVKeg",
-  "displayName": "SVKeg",
+  "name": "Keg-Core",
+  "displayName": "Keg-Core",
   "expo": {
-    "name": "kegexpo",
-    "slug": "kegexpo",
+    "name": "kegcore",
+    "slug": "kegcore",
     "privacy": "public",
     "platforms": [
       "ios",
@@ -29,7 +29,7 @@
     }
   },
   "keg": {
-    "name": "SVKeg",
+    "name": "Keg-Core",
     "routes": {},
     "overrides": {
       "kegName": [
@@ -42,6 +42,11 @@
         "paths",
         "kegSrc"
       ]
+    },
+    "envs": {
+      "process.env.TAP_HOMEPAGE": "tap.package.homepage",
+      "process.env.TAP_VERSION": "tap.package.version",
+      "process.env.KEG_VERSION": "core.package.version"
     },
     "paths": {
       "buildConfig": "core/configs/build.config.js",
@@ -116,24 +121,30 @@
             "babel-preset-expo"
           ],
           "plugins": [
-            [
-              "react-native-web"
-            ]
-          ]
+            ["react-native-web"]
+          ],
+          "env": {
+            "production": {
+              "plugins": [
+                ["transform-react-remove-prop-types", { "removeImport": "true", "ignoreFilenames": ["node_modules"] }]
+              ]
+            }
+          }
         },
         "native": {
           "presets": [
             "babel-preset-expo"
           ],
-          "plugins": []
+          "plugins": [],
+          "env": {
+            "production": {
+              "plugins": [
+                ["transform-react-remove-prop-types", { "removeImport": "true", "ignoreFilenames": ["node_modules"] }]
+              ]
+            }
+          }
         }
       }
-    },
-    "versions": {
-      "development": "1.0.0",
-      "production": "1.0.0",
-      "qa": "1.0.0",
-      "staging": "1.0.0"
     }
   }
 }

@@ -46,10 +46,11 @@ env:
   # Default location of the app in the docker container
   DOC_APP_PATH: /keg/app
   DOC_RETHEME_PATH: /keg/app
+  DOC_JSUTILS_PATH: /keg/app/node_modules/@keg-hub/jsutils
 
   # Default port of the app to expose from the container
-  DOC_APP_PORT: 5000
-
+  KEG_PROXY_PORT: 5000
+  KEG_EXEC_CMD: app
 
   # --- GENERAL CONTEXT ENVs --- #
 
