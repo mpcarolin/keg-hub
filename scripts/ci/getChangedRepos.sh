@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# this is a comment 
 keg_get_changed_repos(){
 
   # Get all keg-hub repos
