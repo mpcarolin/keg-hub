@@ -27,6 +27,7 @@ const checkImportant = (property, value, important) =>
  * @returns {string} - Style rules Object converted into a style rules string
  */
 export const createBlock = (style, config) => {
+  console.log('modification')
   const important = ruleOverrides.important.concat(config?.important)
 
   const prefixed = prefixStyles(createReactDOMStyle(style))
