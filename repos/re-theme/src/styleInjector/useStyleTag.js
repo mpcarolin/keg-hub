@@ -29,7 +29,6 @@ const checkImportant = (property, value, important) =>
 export const createBlock = (style, config) => {
   console.log('modification')
   const important = ruleOverrides.important.concat(config?.important)
-
   const prefixed = prefixStyles(createReactDOMStyle(style))
   const cssString = Object.keys(prefixed)
     .map(property => {
